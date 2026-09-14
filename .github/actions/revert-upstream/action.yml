@@ -26,7 +26,15 @@ runs:
         fi
 
         for p in "${patches[@]}"; do
-          echo "[*] Reverting $(basename "$p")"
-          patch -R -p1 -N -i "$p"
+          name="$(basename "$p")"
+          if patch -R -p1 -N --dry-run -i "$p" >/dev/null 2>&1; then
+            echo "[*] Reverting $name"
+            patch -R -p1 -N -i "$p"
+          elif patch -p1 -N --dry-run -i "$p" >/dev/null 2>&1; then
+            echo "[-] $name not present in this tree, nothing to revert."
+          else
+            echo "[!] $name failed to revert and tree code differs." >&2
+            exit 1
+          fi
         done
         echo "Reverts done."
