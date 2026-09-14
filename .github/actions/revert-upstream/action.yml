@@ -1,0 +1,40 @@
+name: 'Revert Upstream Commits'
+description: 'Reverse-applies patches from kernel_patches/revert/ to back out broken upstream commits'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Revert broken upstream commits
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        set -euo pipefail
+
+        REVERT_DIR="${{ github.workspace }}/kernel_patches/revert"
+        if [[ ! -d "$REVERT_DIR" ]]; then
+          echo "No revert directory found, skipping."
+          exit 0
+        fi
+
+        shopt -s nullglob
+        patches=("$REVERT_DIR"/*.patch)
+        shopt -u nullglob
+
+        if [[ ${#patches[@]} -eq 0 ]]; then
+          echo "No revert patches found, skipping."
+          exit 0
+        fi
+
+        for p in "${patches[@]}"; do
+          name="$(basename "$p")"
+          if patch -R -p1 -N --dry-run -i "$p" >/dev/null 2>&1; then
+            echo "[*] Reverting $name"
+            patch -R -p1 -N -i "$p"
+          elif patch -p1 -N --dry-run -i "$p" >/dev/null 2>&1; then
+            echo "[-] $name not present in this tree, skipping."
+          else
+            echo "[!] $name neither applies nor reverts — tree state unexpected." >&2
+            exit 1
+          fi
+        done
+        echo "Reverts done."
