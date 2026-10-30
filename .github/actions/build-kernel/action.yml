@@ -49,29 +49,7 @@ runs:
     #       ls "${{ github.workspace }}/kernel"
     #       exit 1
     #     fi
-
-    - name: 'Set 300Hz Timer'
-      shell: bash
-      working-directory: ${{ github.workspace }}/kernel
-      run: |
-        set -e
-        echo "Configuring kernel timer frequency to 300Hz across all defconfigs and fragments..."
-        
-        find common/arch/arm64/configs/ -type f \( -name "*defconfig*" -o -name "*.config" \) | while read -r cfg_file; do
-          echo "Patching: $cfg_file"
-          
-          sed -i '/CONFIG_HZ_/d' "$cfg_file"
-          sed -i '/CONFIG_HZ=/d' "$cfg_file"
-          
-          cat << 'EOF' >> "$cfg_file"
-        # CONFIG_HZ_100 is not set
-        # CONFIG_HZ_250 is not set
-        CONFIG_HZ_300=y
-        # CONFIG_HZ_1000 is not set
-        CONFIG_HZ=300
-        EOF
-        done
-        
+    
     - name: 'Build Kernel'
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
