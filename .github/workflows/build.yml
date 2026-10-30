@@ -470,6 +470,14 @@ jobs:
       - name: Initialize Config Fragment
         run: touch "${{ github.workspace }}/wild_gki.fragment"
 
+      - name: Set kernel timer tick rate (HZ)
+        uses: ./.github/actions/set-kernel-config
+        with:
+          config_list:
+            CONFIG_HZ_250=n
+            CONFIG_HZ_300=y
+            CONFIG_HZ=300
+          
       - name: Apply Kernel Bypass Hack
         if: ${{ inputs.allow_version_mismatch == 'true' }}
         uses: ./.github/actions/bypass-kernel
