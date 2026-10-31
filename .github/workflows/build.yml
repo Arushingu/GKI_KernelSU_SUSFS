@@ -153,7 +153,7 @@ jobs:
       - name: Setup more Swap (for LTO)
         uses: pierotofy/set-swap-space@master
         with:
-          swap-size-gb: 16
+          swap-size-gb: 25
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-environment
