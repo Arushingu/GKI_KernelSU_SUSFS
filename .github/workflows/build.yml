@@ -67,7 +67,7 @@ on:
       brand_name:
         required: false
         type: string
-        default: Wild
+        default: Bernkastel
       keep_kmi:
         required: false
         type: boolean
@@ -153,7 +153,7 @@ jobs:
       - name: Setup more Swap (for LTO)
         uses: pierotofy/set-swap-space@master
         with:
-          swap-size-gb: 16
+          swap-size-gb: 25
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-environment
@@ -469,6 +469,16 @@ jobs:
 
       - name: Initialize Config Fragment
         run: touch "${{ github.workspace }}/wild_gki.fragment"
+
+      - name: Set kernel timer tick rate (HZ) and performance configs
+        uses: ./.github/actions/set-kernel-config
+        with:
+          config_list: |
+            CONFIG_HZ_1000=y
+            CONFIG_TCP_CONG_BBR=y
+            CONFIG_DEFAULT_TCP_CONG="bbr"
+            CONFIG_ZRAM=y
+            CONFIG_ZRAM_DEF_COMP_ZSTD=y
 
       - name: Apply Kernel Bypass Hack
         if: ${{ inputs.allow_version_mismatch == 'true' }}
