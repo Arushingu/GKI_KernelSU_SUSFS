@@ -457,6 +457,19 @@ jobs:
         with:
           config_list: |
             CONFIG_CGROUP_PIDS=y
+      # OFF BY DEFAULT: CONFIG_SYSVIPC adds struct sysv_sem/sysv_shm to
+      # struct task_struct and CONFIG_POSIX_MQUEUE grows struct ipc_namespace.
+      # Stock GKI has both off on every family; the upstream kABI patch only
+      # removes padding, not the fields, so enabling them still moves 6,329 of
+      # 9,741 symbols on 6.18. Opt in only for a container that needs SysV IPC.
+      - name: SysV IPC for containers (ABI drift, opt-in)
+        if: contains(inputs.feature_set, 'SYSVIPC')
+        uses: ./.github/actions/set-kernel-config
+        with:
+          config_list: |
+            CONFIG_SYSVIPC=y
+            CONFIG_POSIX_MQUEUE=y
+
       - name: Apply NTSync Patches
         if: contains(inputs.feature_set, 'NTSync')
         uses: ./.github/actions/ntsync
